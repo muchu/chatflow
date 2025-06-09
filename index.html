@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Chat with LLM</title>
+<style>
+body { font-family: Arial, sans-serif; background: #f0f0f0; }
+#chat { max-width: 600px; margin: 40px auto; background: white; padding: 20px; border-radius: 8px; }
+.message { margin-bottom: 10px; }
+.user { text-align: right; color: blue; }
+.bot { text-align: left; color: green; }
+#inputArea { display: flex; margin-top: 20px; }
+#messageInput { flex: 1; padding: 8px; }
+#sendButton { padding: 8px 16px; }
+</style>
+</head>
+<body>
+<div id="chat"></div>
+<div id="inputArea">
+  <input id="messageInput" type="text" placeholder="Type your message" />
+  <button id="sendButton">Send</button>
+</div>
+<script>
+const chatDiv = document.getElementById('chat');
+const input = document.getElementById('messageInput');
+const sendButton = document.getElementById('sendButton');
+
+function appendMessage(text, className) {
+  const div = document.createElement('div');
+  div.className = 'message ' + className;
+  div.textContent = text;
+  chatDiv.appendChild(div);
+  chatDiv.scrollTop = chatDiv.scrollHeight;
+}
+
+async function sendMessage() {
+  const text = input.value.trim();
+  if (!text) return;
+  appendMessage(text, 'user');
+  input.value = '';
+  try {
+    const response = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: text })
+    });
+    const data = await response.json();
+    appendMessage(data.reply, 'bot');
+  } catch (err) {
+    appendMessage('Error: ' + err, 'bot');
+  }
+}
+
+sendButton.addEventListener('click', sendMessage);
+input.addEventListener('keydown', e => {
+  if (e.key === 'Enter') sendMessage();
+});
+</script>
+</body>
+</html>
